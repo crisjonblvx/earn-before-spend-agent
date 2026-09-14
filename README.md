@@ -55,6 +55,16 @@ flowchart LR
 - **Human Decision Gate**: terms acceptance, identity attestations, legal commitments, publication, and spending remain human-controlled.
 - **Reconciliation Layer (roadmap)**: verifies payouts and subtracts fees, refunds, reserves, and attributable costs before claiming success.
 
+## Beyond the first dollar
+
+Earn Before Spend also informs a two-agent experiment in autonomous economic behavior: Bonita and GPT independently pursue credible earning opportunities under the same zero-new-seed-capital constraint. The research asks how effectively agents discover opportunities, reuse existing resources, adapt after failure, and create verified economic value with minimal human intervention.
+
+The proposed research architecture extends the workflow:
+
+**Discover → Evaluate → Act → Verify → Learn → Research Ledger**
+
+[RESEARCH.md](RESEARCH.md) defines the three-ledger protocol, intended cadence, instrumentation, and comparative metrics, including Autonomous Economic Efficiency. **This is an active research direction; not all telemetry and comparative-learning features are implemented in the current hackathon prototype.** The extended workflow is a research design, not a claim of autonomous execution or verified earnings.
+
 ## Guardrails
 
 An opportunity is blocked when any of these are true:
@@ -78,6 +88,7 @@ The agent also refuses to treat gambling, paid-entry speculation, securities/cry
 - `requirements.txt` - Strands Agents SDK dependency
 - `ARCHITECTURE.md` - architecture diagram and execution flow
 - `DEVPOST.md` - submission copy and disclosure notes
+- `RESEARCH.md` - two-agent research protocol, proposed instrumentation, and implementation limits
 
 ## Run the deterministic demo
 
