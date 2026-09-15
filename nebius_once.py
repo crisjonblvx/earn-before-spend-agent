@@ -10,10 +10,10 @@ import urllib.error
 import urllib.request
 from datetime import datetime, timezone
 from pathlib import Path
+
+from nebius_preflight import require_live_config
 from scenarios import report
 
-ENDPOINT = "https://api.tokenfactory.us-central1.nebius.com/v1/chat/completions"
-MODEL = "nvidia/nemotron-3-super-120b-a12b"
 ROOT = Path(__file__).resolve().parent
 
 
@@ -23,18 +23,16 @@ class NoRedirect(urllib.request.HTTPRedirectHandler):
 
 
 def require_gate():
-    if os.environ.get("ALLOW_LIVE_NEBIUS_TEST") != "YES":
-        raise RuntimeError("Blocked: explicit live-test authorization is missing.")
-    if os.environ.get("NEBIUS_PROMO_COVERAGE_CONFIRMED") != "YES":
-        raise RuntimeError("Blocked: promotional credit coverage and disabled paid usage must be confirmed.")
+    config = require_live_config()
     key = os.environ.get("NEBIUS_API_KEY", "").strip()
-    if not key:
-        raise RuntimeError("Blocked: an environment-scoped Nebius key is missing.")
-    return key
+    return key, config
 
 
 def run_once(destination=ROOT / "evidence"):
-    key = require_gate()
+    key, config = require_gate()
+    endpoint = config["base_url"] + "/chat/completions"
+    model = config["model_id"]
+
     destination.mkdir(parents=True, exist_ok=True)
     lock = destination / "nebius-request.lock"
     try:
@@ -42,18 +40,50 @@ def run_once(destination=ROOT / "evidence"):
     except FileExistsError:
         raise RuntimeError("Blocked: a request was already attempted. Review the evidence before manually clearing the lock.")
     os.close(fd)
+
     result = report()
-    body = json.dumps({"model": MODEL, "messages": [
-        {"role": "system", "content": "Explain deterministic economic tool results. Never override blockers. Never count hypothetical payouts as earnings. Preserve human approval for terms and payout setup. Answer concisely in under 150 words."},
-        {"role": "user", "content": "These are illustrative scenarios, not real offers. Explain which option qualifies, why the others fail, and the next bounded action and human gate. " + json.dumps(result)}],
-        "max_tokens": 350, "temperature": 0, "stream": False}).encode()
-    request = urllib.request.Request(ENDPOINT, data=body, headers={
-        "Authorization": "Bearer " + key, "Content-Type": "application/json"})
-    evidence = {"status": "failed", "created_at": datetime.now(timezone.utc).isoformat(),
-        "model": MODEL, "endpoint": ENDPOINT, "request_attempts": 1,
-        "requested_max_tokens": 350, "scope": "explanation_of_precomputed_python_results",
-        "deterministic_results": result, "cash_cost_usd": None,
-        "cost_note": "Reconcile actual credit consumption in the provider console; token cap is not a cash cap."}
+    body = json.dumps({
+        "model": model,
+        "messages": [
+            {
+                "role": "system",
+                "content": (
+                    "Explain deterministic economic tool results. Never override blockers. "
+                    "Never count hypothetical payouts as earnings. Preserve human approval "
+                    "for terms and payout setup. Answer concisely in under 150 words."
+                ),
+            },
+            {
+                "role": "user",
+                "content": (
+                    "These are illustrative scenarios, not real offers. Explain which option "
+                    "qualifies, why the others fail, and the next bounded action and human gate. "
+                    + json.dumps(result)
+                ),
+            },
+        ],
+        "max_tokens": 350,
+        "temperature": 0,
+        "stream": False,
+    }).encode()
+    request = urllib.request.Request(
+        endpoint,
+        data=body,
+        headers={"Authorization": "Bearer " + key, "Content-Type": "application/json"},
+    )
+    evidence = {
+        "status": "failed",
+        "created_at": datetime.now(timezone.utc).isoformat(),
+        "model": model,
+        "endpoint": endpoint,
+        "provider_preflight": config["checks"],
+        "request_attempts": 1,
+        "requested_max_tokens": 350,
+        "scope": "explanation_of_precomputed_python_results",
+        "deterministic_results": result,
+        "cash_cost_usd": None,
+        "cost_note": "Reconcile actual credit consumption in the provider console; token cap is not a cash cap.",
+    }
     started = time.monotonic()
     try:
         with urllib.request.build_opener(NoRedirect).open(request, timeout=45) as response:
@@ -62,9 +92,14 @@ def run_once(destination=ROOT / "evidence"):
         output = choice["message"].get("content")
         if not isinstance(output, str) or not output.strip():
             raise ValueError("No nonempty assistant content returned")
-        evidence.update(status="completed", output=output.replace(key, "[REDACTED]"),
-            finish_reason=choice.get("finish_reason"), usage=payload.get("usage"),
-            returned_model=payload.get("model"), review_required=True)
+        evidence.update(
+            status="completed",
+            output=output.replace(key, "[REDACTED]"),
+            finish_reason=choice.get("finish_reason"),
+            usage=payload.get("usage"),
+            returned_model=payload.get("model"),
+            review_required=True,
+        )
     except Exception as exc:
         # Do not persist raw exception bodies or headers, which can contain secrets.
         evidence["error_type"] = type(exc).__name__
