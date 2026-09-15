@@ -32,13 +32,13 @@ The system then prepares only the next bounded action and stops at human-control
 
 ## Significant updates made during the submission period
 
-The original Earn Before Spend prototype predates this hackathon. This submission branch significantly updates it by:
+The original Earn Before Spend prototype was prepared for AWS Agents for Humans. The public repository begins September 14, 2026, inside the Nebius submission period; earlier private conceptual work does not establish a pre-August-26 implementation. Confirm the exact new/existing classification before submission. This adaptation updates the prototype by:
 
 1. adding an explicit Nebius Token Factory model-provider adapter for NVIDIA Nemotron;
 2. routing Strands through Nebius's OpenAI-compatible API;
 3. keeping API credentials environment-only;
 4. adding fail-closed provider configuration and tests;
-5. adding an explicit one-run live-test gate so no model call occurs without human authorization;
+5. adding an explicit one-request live-test gate, no retries or redirects, a 350-token limit, a persistent attempt lock, and a promotional-credit confirmation requirement;
 6. adding a Nebius-specific evaluation plan for cost, rejection accuracy, resource-reuse reasoning, and human-gate compliance;
 7. preserving deterministic Python as the final economic authority even when Nemotron provides reasoning and orchestration.
 
@@ -52,7 +52,7 @@ Nebius Token Factory endpoint:
 
 `https://api.tokenfactory.us-central1.nebius.com/v1/`
 
-The project makes a runtime inference call to NVIDIA Nemotron through Nebius Token Factory. The model is used for opportunity comparison, explanation, and agent orchestration. Deterministic tools remain responsible for final qualification and ranking so the model cannot waive the zero-capital rules.
+The project has a prepared runtime inference path to NVIDIA Nemotron through Nebius Token Factory; a successful live result remains pending. The model is used for opportunity comparison, explanation, and agent orchestration. Deterministic tools remain responsible for final qualification and ranking so the model cannot waive the zero-capital rules.
 
 ## Why Nemotron
 
@@ -164,3 +164,7 @@ CJ must explicitly approve before:
 - publishing or changing public competition materials;
 - submitting the project;
 - providing identity, tax, prize, or payout information.
+
+## September 15 test-build update
+
+A runnable, dependency-free Python web demo now exercises the actual gate with editable cash, labor and payout-evidence assumptions. `TEST_BUILD.md` provides judge setup instructions. `nebius_once.py` records a single real model response only after credentials, authorization and promotional-credit coverage are configured. The local narrated walkthrough is interim material, not a completed live-model video.

@@ -25,6 +25,18 @@ Earn Before Spend flips the sequence:
 
 A possible prize is not revenue. A test payment is not revenue. An owner deposit is not revenue. Credits are not revenue.
 
+## Nebius hackathon test build
+
+Download this branch and run `python3 web_demo.py` (Python 3.10+, no packages or API key required). Open http://127.0.0.1:8765. Change cash, owner labor, or payout evidence to exercise the actual Python gate. All opportunity inputs are explicitly illustrative. The browser cannot trigger inference or spending.
+
+[Judge setup and live-evaluation instructions](TEST_BUILD.md).
+
+The optional `python3 nebius_once.py` path makes one authorized HTTPS request to NVIDIA Nemotron on Nebius Token Factory, using the deterministic result as context. It records model output, latency, token usage, and failures locally. It does not demonstrate autonomous Strands tool calls. The separate original Strands orchestration remains available through `agent.py`.
+
+**Current status:** local guardrail demo implemented; successful live Nebius inference, credit reconciliation, and firsthand platform feedback still pending. Do not confuse this test build with a completed competition entry.
+
+**Timeline:** this public repository's first commit is September 14, 2026. It was originally prepared for AWS Agents for Humans and adapted for Nebius on the same date. Earlier private conceptual work is disclosed below; the repository history does not establish a pre-August-26 implementation. Confirm the exact Devpost new/existing answer before submission.
+
 ## AWS Agents for Humans
 
 **Track:** Professional Agents
