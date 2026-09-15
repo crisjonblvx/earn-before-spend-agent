@@ -12,6 +12,7 @@ from dataclasses import asdict
 from strands import Agent, tool
 
 from core import Opportunity, Pathway, evaluate, rank
+from model_provider import configured_model
 
 
 @tool
@@ -53,10 +54,14 @@ Rules:
 
 
 def build_agent() -> Agent:
-    return Agent(
-        system_prompt=SYSTEM_PROMPT,
-        tools=[evaluate_opportunity, rank_opportunities],
-    )
+    model = configured_model()
+    kwargs = {
+        "system_prompt": SYSTEM_PROMPT,
+        "tools": [evaluate_opportunity, rank_opportunities],
+    }
+    if model is not None:
+        kwargs["model"] = model
+    return Agent(**kwargs)
 
 
 def run_demo(opportunities: list[dict]) -> str:
