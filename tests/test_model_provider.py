@@ -58,21 +58,54 @@ class ModelProviderTests(unittest.TestCase):
         self.assertEqual(model.kwargs["params"]["max_tokens"], 1200)
         self.assertEqual(model.kwargs["params"]["temperature"], 0.2)
 
-    def test_nebius_allows_explicit_cost_control_overrides(self):
+    def test_nebius_allows_bounded_cost_control_overrides(self):
         env = {
             "MODEL_PROVIDER": "nebius",
             "NEBIUS_API_KEY": "test-only-not-a-real-secret",
             "NEBIUS_MODEL_ID": "nvidia/nemotron-3-super-120b-a12b",
-            "NEBIUS_BASE_URL": "https://example.invalid/v1/",
+            "NEBIUS_BASE_URL": "https://api.tokenfactory.us-central1.nebius.com/v1",
             "MODEL_MAX_TOKENS": "350",
             "MODEL_TEMPERATURE": "0",
         }
         with patch.dict(os.environ, env, clear=True), patch.dict(sys.modules, fake_strands_modules()):
             model = model_provider.configured_model()
 
-        self.assertEqual(model.kwargs["client_args"]["base_url"], "https://example.invalid/v1/")
+        self.assertEqual(
+            model.kwargs["client_args"]["base_url"],
+            "https://api.tokenfactory.us-central1.nebius.com/v1/",
+        )
         self.assertEqual(model.kwargs["params"]["max_tokens"], 350)
         self.assertEqual(model.kwargs["params"]["temperature"], 0.0)
+
+    def test_nebius_rejects_non_nebius_endpoint(self):
+        env = {
+            "MODEL_PROVIDER": "nebius",
+            "NEBIUS_API_KEY": "test-only-not-a-real-secret",
+            "NEBIUS_BASE_URL": "https://example.invalid/v1/",
+        }
+        with patch.dict(os.environ, env, clear=True):
+            with self.assertRaisesRegex(RuntimeError, "Nebius Token Factory"):
+                model_provider.configured_model()
+
+    def test_nebius_rejects_non_nvidia_model(self):
+        env = {
+            "MODEL_PROVIDER": "nebius",
+            "NEBIUS_API_KEY": "test-only-not-a-real-secret",
+            "NEBIUS_MODEL_ID": "other/model",
+        }
+        with patch.dict(os.environ, env, clear=True):
+            with self.assertRaisesRegex(RuntimeError, "NVIDIA model"):
+                model_provider.configured_model()
+
+    def test_nebius_rejects_unbounded_token_override(self):
+        env = {
+            "MODEL_PROVIDER": "nebius",
+            "NEBIUS_API_KEY": "test-only-not-a-real-secret",
+            "MODEL_MAX_TOKENS": "500000",
+        }
+        with patch.dict(os.environ, env, clear=True):
+            with self.assertRaisesRegex(RuntimeError, "between 1 and"):
+                model_provider.configured_model()
 
 
 if __name__ == "__main__":
