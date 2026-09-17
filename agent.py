@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import json
 from dataclasses import asdict
+from typing import Any
 
 from strands import Agent, tool
 
@@ -52,15 +53,18 @@ Rules:
 """.strip()
 
 
-def build_agent() -> Agent:
-    return Agent(
-        system_prompt=SYSTEM_PROMPT,
-        tools=[evaluate_opportunity, rank_opportunities],
-    )
+def build_agent(model: Any | None = None) -> Agent:
+    kwargs: dict[str, Any] = {
+        "system_prompt": SYSTEM_PROMPT,
+        "tools": [evaluate_opportunity, rank_opportunities],
+    }
+    if model is not None:
+        kwargs["model"] = model
+    return Agent(**kwargs)
 
 
-def run_demo(opportunities: list[dict]) -> str:
-    agent = build_agent()
+def run_demo(opportunities: list[dict], model: Any | None = None) -> str:
+    agent = build_agent(model=model)
     payload = json.dumps(opportunities)
     return str(agent(
         "Rank these three opportunities using the deterministic tool. Explain the best next action, "
