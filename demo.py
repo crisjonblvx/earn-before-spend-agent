@@ -1,7 +1,9 @@
 """Earn Before Spend demonstration.
 
-Default execution is deterministic and makes no provider call. Set RUN_STRANDS=1
-only after an approved, capped model route has been configured.
+Default execution is deterministic and makes no provider call. Set RUN_NEBIUS=1
+only after an approved Nebius Token Factory key/credit path is configured. The
+Nebius path is deliberately one bounded model call with a hard output-token cap.
+Set RUN_STRANDS=1 only for the legacy Strands-provider demo.
 """
 from __future__ import annotations
 
@@ -67,6 +69,15 @@ def sample_opportunities() -> list[Opportunity]:
     ]
 
 
+def _payload(opportunities: list[Opportunity]) -> list[dict]:
+    payload = []
+    for item in opportunities:
+        row = asdict(item)
+        row["pathway"] = item.pathway.value
+        payload.append(row)
+    return payload
+
+
 def main() -> None:
     opportunities = sample_opportunities()
     deterministic = [asdict(item) for item in rank(opportunities)]
@@ -76,14 +87,17 @@ def main() -> None:
         "ranking": deterministic,
     }, indent=2))
 
-    if os.environ.get("RUN_STRANDS") == "1":
+    if os.environ.get("RUN_NEBIUS") == "1":
         from agent import run_demo
-        payload = []
-        for item in opportunities:
-            row = asdict(item)
-            row["pathway"] = item.pathway.value
-            payload.append(row)
-        print(run_demo(payload))
+        from nebius import NebiusConfig, build_nebius_model
+
+        config = NebiusConfig.from_env()
+        print(json.dumps({"nebius": config.public_summary()}, indent=2))
+        # Exactly one agent invocation. No retry loop and no fallback provider.
+        print(run_demo(_payload(opportunities), model=build_nebius_model(config)))
+    elif os.environ.get("RUN_STRANDS") == "1":
+        from agent import run_demo
+        print(run_demo(_payload(opportunities)))
 
 
 if __name__ == "__main__":
