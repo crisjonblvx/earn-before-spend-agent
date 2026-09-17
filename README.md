@@ -25,6 +25,16 @@ Earn Before Spend flips the sequence:
 
 A possible prize is not revenue. A test payment is not revenue. An owner deposit is not revenue. Credits are not revenue.
 
+## Nebius x NVIDIA Global AI Hackathon
+
+**Track:** Best Apps and Agents
+
+The hackathon branch adds an explicit **Nebius Token Factory + NVIDIA Nemotron 3 Super** reasoning route while keeping the deterministic zero-cash gate authoritative. The Strands agent uses the official LiteLLM adapter with the model id `nebius/nvidia/nemotron-3-super-120b-a12b`.
+
+The provider path is opt-in and deliberately bounded: the default demo makes no network call, `RUN_NEBIUS=1` must be set explicitly, a Nebius API key is required, there is no paid-provider fallback, output is hard-capped at 700 tokens, and the demo makes one agent invocation with no retry loop. This mirrors the product thesis: an agent designed to earn before spending should not silently create an uncapped inference bill.
+
+See [NEBIUS_HACKATHON.md](NEBIUS_HACKATHON.md) for the verified requirements, architecture, Devpost draft copy, demo plan, and remaining external test gates.
+
 ## AWS Agents for Humans
 
 **Track:** Professional Agents
@@ -51,6 +61,7 @@ flowchart LR
 ### Components
 
 - **Strands Agent**: interprets the user goal, invokes qualification/ranking tools, explains tradeoffs, and proposes the next action.
+- **Nebius Token Factory / NVIDIA Nemotron**: optional hackathon reasoning backend, selected explicitly and bounded by a hard output-token ceiling.
 - **Deterministic Economic Gate**: Python rules that the model cannot override.
 - **Human Decision Gate**: terms acceptance, identity attestations, legal commitments, publication, and spending remain human-controlled.
 - **Reconciliation Layer (roadmap)**: verifies payouts and subtracts fees, refunds, reserves, and attributable costs before claiming success.
@@ -83,11 +94,14 @@ The agent also refuses to treat gambling, paid-entry speculation, securities/cry
 
 - `core.py` - deterministic qualification and ranking engine
 - `agent.py` - Strands tools and system policy
-- `demo.py` - deterministic demo by default; optional Strands model run
-- `test_core.py` - focused guardrail tests
-- `requirements.txt` - Strands Agents SDK dependency
+- `nebius.py` - bounded Nebius Token Factory / NVIDIA model configuration
+- `demo.py` - deterministic demo by default; optional Strands or Nebius model run
+- `test_core.py` - focused economic guardrail tests
+- `test_nebius.py` - no-fallback, NVIDIA-model, token-cap, and secret-redaction tests
+- `requirements.txt` - Strands Agents SDK with LiteLLM support
 - `ARCHITECTURE.md` - architecture diagram and execution flow
-- `DEVPOST.md` - submission copy and disclosure notes
+- `DEVPOST.md` - AWS submission copy and disclosure notes
+- `NEBIUS_HACKATHON.md` - Nebius x NVIDIA execution/submission packet
 - `RESEARCH.md` - two-agent research protocol, proposed instrumentation, and implementation limits
 
 ## Run the deterministic demo
@@ -101,10 +115,28 @@ python demo.py
 ## Run tests
 
 ```bash
-python -m unittest test_core.py -v
+python -m unittest test_core.py test_nebius.py -v
 ```
 
-## Run with Strands
+## Run with Nebius Token Factory + NVIDIA Nemotron
+
+Install dependencies, provide an approved Nebius API key, and opt in explicitly:
+
+```bash
+pip install -r requirements.txt
+export NEBIUS_API_KEY="..."
+export RUN_NEBIUS=1
+python demo.py
+```
+
+Optional bounded overrides:
+
+```bash
+export NEBIUS_MODEL_ID="nvidia/nemotron-3-super-120b-a12b"
+export NEBIUS_MAX_TOKENS=500
+```
+
+## Run with Strands default provider
 
 Python 3.10+ and a configured Strands-supported model provider are required.
 
@@ -122,8 +154,9 @@ Given three opportunities, the agent can preserve an expiring no-fee competition
 ## Development disclosure
 
 - Built during the AWS Agents for Humans submission period.
+- The repository itself was created September 14, 2026, within the Nebius x NVIDIA Global AI Hackathon submission period.
 - AI coding assistance was used.
-- Standard Python library and Strands Agents SDK are used.
+- Standard Python library and Strands Agents SDK are used; the Nebius branch adds the Strands LiteLLM adapter for Token Factory.
 - The concept was informed by earlier private work on safe autonomous-agent economics, but this public project is a new standalone implementation and contains no private code imports or private data.
 
 ## License
