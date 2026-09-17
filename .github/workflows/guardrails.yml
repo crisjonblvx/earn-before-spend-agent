@@ -1,0 +1,19 @@
+name: Guardrail tests
+
+on:
+  push:
+    branches: [main, "bonita/**"]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Run deterministic and Nebius config tests
+        run: python -m unittest test_core.py test_nebius.py -v
+      - name: Syntax-check provider integration
+        run: python -m py_compile agent.py demo.py nebius.py
