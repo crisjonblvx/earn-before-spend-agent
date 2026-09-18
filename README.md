@@ -1,46 +1,80 @@
 # Earn Before Spend
 
-**A zero-capital opportunity agent built with the Strands Agents SDK.**
+**A zero-capital opportunity agent with a deterministic economic gate and an NVIDIA Nemotron reasoning layer on Nebius Token Factory.**
 
-Earn Before Spend helps creators, independent professionals, small businesses, and community organizations answer a deceptively hard question:
+Earn Before Spend helps creators, independent professionals, small businesses, and community organizations answer one practical question:
 
 > **What is the smallest credible way I can move from $0 in new seed capital to verified positive cash contribution?**
 
-The agent does not assume the answer is “start a business.” It can compare different earning pathways such as bounties, competitions, services, licenses, affiliate commissions, digital products, and grants/awards. A deterministic guardrail layer blocks any candidate that requires new cash, hides too much owner labor, has unclear rights or eligibility, or lacks a verifiable payout path.
-
-The LLM can explain, compare, and orchestrate. **It cannot override the economic rules.**
-
-## Why it matters
-
-People often spend money before validating whether an idea can earn anything at all. Creators and small organizations are especially vulnerable to this pattern: buy software, buy ads, register another domain, subscribe to another AI tool, then hope revenue appears.
-
-Earn Before Spend flips the sequence:
-
-1. Find legitimate opportunities.
-2. Prove they can be pursued without new cash.
-3. Rank only the qualified options.
-4. Surface legal/identity/terms decisions to a human.
-5. Take the smallest bounded next action.
-6. Treat money as real only after trusted payout verification and cost reconciliation.
+The system compares earning paths such as bounties, competitions, services, licenses, affiliate commissions, digital products, and grants/awards. A deterministic Python guardrail layer blocks candidates that require new cash, hide too much owner labor, have unclear rights or eligibility, or lack a verifiable payout path. The model can explain tradeoffs and choose the next bounded action, but it cannot override those economic rules.
 
 A possible prize is not revenue. A test payment is not revenue. An owner deposit is not revenue. Credits are not revenue.
 
-## AWS Agents for Humans
+## Nebius x NVIDIA Global AI Hackathon
 
-**Track:** Professional Agents
+**Track:** Best Apps and Agents
 
-This project was created during the AWS Agents for Humans submission period and uses the **Strands Agents SDK** as the agentic layer. AI coding assistance was used during development. No private BLVX/Bonita source code, user data, customer data, private prompts, or proprietary cultural datasets are included in this repository.
+This repository now includes a material hackathon-period adaptation that routes the reasoning/explanation layer through **NVIDIA Nemotron 3 Super** served by **Nebius Token Factory** while keeping the deterministic zero-capital gate authoritative.
+
+- Nebius route: `https://api.tokenfactory.us-central1.nebius.com/v1/`
+- Default model: `nvidia/nemotron-3-super-120b-a12b`
+- The Token Factory call is additive; the original provider-free deterministic demo remains available.
+- No API key is committed to the repository.
+- No resource is provisioned automatically.
+- Terms acceptance, identity/legal attestations, public submission, spending, payout connections, and money movement remain human-controlled.
+
+### Material update during the submission period
+
+The project existed before the Nebius submission period. The significant update for this hackathon is the Nebius Token Factory + NVIDIA Nemotron execution path, its offline verification tests, a judge-safe live smoke-evidence command, and hackathon-specific run documentation. The earlier Strands/AWS path remains in the repository as provenance and is not represented as the Nebius execution layer.
+
+## Quick start
+
+Python 3.10+ is recommended.
+
+```bash
+pip install -r requirements.txt
+```
+
+### Provider-free deterministic demo
+
+```bash
+python demo.py
+```
+
+### Offline tests
+
+```bash
+python -m unittest test_core.py test_nebius_agent.py -v
+```
+
+### Live Nebius / Nemotron run
+
+A live run requires an existing, approved Nebius Token Factory API key:
+
+```bash
+export NEBIUS_API_KEY="..."
+python nebius_smoke.py
+```
+
+`nebius_smoke.py` performs one live completion and prints a sanitized evidence record containing the provider, model, Token Factory host, UTC completion time, hashes of the deterministic context and model completion, and the completion text. It never prints the API key. A successful result proves one observed Token Factory/Nemotron call only; it is not evidence of earnings, payout, deployment scale, or contest acceptance.
+
+Optional overrides:
+
+```bash
+export NEBIUS_MODEL="nvidia/nemotron-3-super-120b-a12b"
+export NEBIUS_BASE_URL="https://api.tokenfactory.us-central1.nebius.com/v1/"
+```
 
 ## Architecture
 
 ```mermaid
 flowchart LR
-    A[Opportunity candidates] --> B[Strands Agent]
-    B --> C[Deterministic zero-cash tools]
-    C --> D{Qualified?}
-    D -- No --> E[Reject + explain blocker]
-    D -- Yes --> F[Rank by expected value, legitimacy, fit, urgency, owner dependence]
-    F --> G{Terms, identity, legal or public commitment?}
+    A[Opportunity candidates] --> B[Deterministic zero-cash gate]
+    B --> C{Qualified?}
+    C -- No --> D[Reject + explain blocker]
+    C -- Yes --> E[Rank by EV, legitimacy, fit, urgency, owner dependence]
+    E --> F[NVIDIA Nemotron on Nebius Token Factory]
+    F --> G{Terms, identity, legal, payout or public commitment?}
     G -- Yes --> H[Human decision]
     G -- No --> I[Next bounded action]
     H --> I
@@ -48,22 +82,12 @@ flowchart LR
     J --> K[Verified cash contribution + learning]
 ```
 
-### Components
+### Core components
 
-- **Strands Agent**: interprets the user goal, invokes qualification/ranking tools, explains tradeoffs, and proposes the next action.
 - **Deterministic Economic Gate**: Python rules that the model cannot override.
-- **Human Decision Gate**: terms acceptance, identity attestations, legal commitments, publication, and spending remain human-controlled.
+- **Nebius/Nemotron Reasoning Layer**: explains ranked options and selects the smallest bounded next action from the already-qualified context.
+- **Human Decision Gate**: terms acceptance, identity attestations, legal commitments, publication, payout connections, and spending remain human-controlled.
 - **Reconciliation Layer (roadmap)**: verifies payouts and subtracts fees, refunds, reserves, and attributable costs before claiming success.
-
-## Beyond the first dollar
-
-Earn Before Spend also informs a two-agent experiment in autonomous economic behavior: Bonita and GPT independently pursue credible earning opportunities under the same zero-new-seed-capital constraint. The research asks how effectively agents discover opportunities, reuse existing resources, adapt after failure, and create verified economic value with minimal human intervention.
-
-The proposed research architecture extends the workflow:
-
-**Discover → Evaluate → Act → Verify → Learn → Research Ledger**
-
-[RESEARCH.md](RESEARCH.md) defines the three-ledger protocol, intended cadence, instrumentation, and comparative metrics, including Autonomous Economic Efficiency. **This is an active research direction; not all telemetry and comparative-learning features are implemented in the current hackathon prototype.** The extended workflow is a research design, not a claim of autonomous execution or verified earnings.
 
 ## Guardrails
 
@@ -77,55 +101,36 @@ An opportunity is blocked when any of these are true:
 - legitimacy is below the threshold;
 - the probability input is invalid.
 
-The agent also refuses to treat gambling, paid-entry speculation, securities/crypto trading, owner deposits, loans, gifts, test payments, or hypothetical value as earnings.
+The system also refuses to treat gambling, paid-entry speculation, securities/crypto trading, owner deposits, loans, gifts, test payments, or hypothetical value as earnings.
 
 ## Files
 
 - `core.py` - deterministic qualification and ranking engine
-- `agent.py` - Strands tools and system policy
-- `demo.py` - deterministic demo by default; optional Strands model run
-- `test_core.py` - focused guardrail tests
-- `requirements.txt` - Strands Agents SDK dependency
-- `ARCHITECTURE.md` - architecture diagram and execution flow
-- `DEVPOST.md` - submission copy and disclosure notes
-- `RESEARCH.md` - two-agent research protocol, proposed instrumentation, and implementation limits
+- `nebius_agent.py` - Nebius Token Factory / NVIDIA Nemotron adapter
+- `nebius_smoke.py` - one-command sanitized live-call evidence capture
+- `test_nebius_agent.py` - network-free Nebius adapter tests
+- `agent.py` - original Strands tools and policy layer
+- `demo.py` - provider-free deterministic demo and sample opportunities
+- `test_core.py` - deterministic guardrail tests
+- `NEBIUS-NVIDIA.md` - hackathon adaptation notes and evidence checklist
+- `ARCHITECTURE.md` - architecture and execution flow
+- `DEVPOST.md` - earlier submission copy/provenance notes
+- `RESEARCH.md` - two-agent research protocol and implementation limits
+- `requirements.txt` - Python dependencies
 
-## Run the deterministic demo
+## Earlier AWS/Strands provenance
 
-No model provider is required for the default demo.
+The standalone public project was originally created during the AWS Agents for Humans submission period and used the Strands Agents SDK as its agentic layer. That history remains visible for provenance. The Nebius x NVIDIA adaptation is additive and clearly separated so judges can identify what changed during the current submission period.
 
-```bash
-python demo.py
-```
-
-## Run tests
-
-```bash
-python -m unittest test_core.py -v
-```
-
-## Run with Strands
-
-Python 3.10+ and a configured Strands-supported model provider are required.
-
-```bash
-pip install -r requirements.txt
-RUN_STRANDS=1 python demo.py
-```
-
-Strands defaults can use Amazon Bedrock, but the SDK is model-agnostic. The deterministic gate remains authoritative regardless of provider.
-
-## Example behavior
-
-Given three opportunities, the agent can preserve an expiring no-fee competition while still identifying a smaller fixed bounty as the more predictable first-dollar path. If joining the competition requires accepting third-party terms, the agent stops and surfaces that exact decision to the human instead of silently accepting it.
+The broader research direction explores whether bounded agents can discover legitimate opportunities, reuse existing assets, adapt after failure, and create verified economic value with minimal human intervention. `RESEARCH.md` documents the proposed research ledger and metrics. Those research extensions are not represented as already-complete autonomous earning capability.
 
 ## Development disclosure
 
-- Built during the AWS Agents for Humans submission period.
 - AI coding assistance was used.
-- Standard Python library and Strands Agents SDK are used.
-- The concept was informed by earlier private work on safe autonomous-agent economics, but this public project is a new standalone implementation and contains no private code imports or private data.
+- The repository contains no private BLVX/Bonita source code, private prompts, customer data, or proprietary cultural datasets.
+- The Nebius adapter does not provision paid resources or accept third-party terms.
+- Verified earnings are recorded only after an actual external payout clears and attributable costs are reconciled.
 
 ## License
 
-MIT
+MIT. See [LICENSE](LICENSE).
