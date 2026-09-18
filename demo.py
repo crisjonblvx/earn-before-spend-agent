@@ -1,7 +1,9 @@
 """Earn Before Spend demonstration.
 
-Default execution is deterministic and makes no provider call. Set RUN_STRANDS=1
-only after an approved, capped model route has been configured.
+Default execution is deterministic and makes no provider call. Set RUN_NEBIUS=1
+only after an approved, bounded Nebius Token Factory API key is configured.
+Set RUN_STRANDS=1 only after an approved, capped Strands-supported route is
+configured.
 """
 from __future__ import annotations
 
@@ -75,6 +77,17 @@ def main() -> None:
         "warning": "Planning priors are illustrative; they are not promised odds.",
         "ranking": deterministic,
     }, indent=2))
+
+    if os.environ.get("RUN_NEBIUS") == "1":
+        from nebius_reasoner import DEFAULT_MODEL, explain_ranked_evaluations
+
+        explanation = explain_ranked_evaluations(deterministic)
+        print(json.dumps({
+            "mode": "nebius_token_factory_nvidia_nemotron",
+            "model": os.environ.get("NEBIUS_MODEL", DEFAULT_MODEL),
+            "authority": "explanation_only_deterministic_gate_remains_authoritative",
+            "explanation": explanation,
+        }, indent=2))
 
     if os.environ.get("RUN_STRANDS") == "1":
         from agent import run_demo
