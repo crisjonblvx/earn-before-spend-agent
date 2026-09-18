@@ -44,7 +44,7 @@ python demo.py
 ### Offline tests
 
 ```bash
-python -m unittest test_core.py test_nebius_agent.py -v
+python -m unittest test_core.py test_nebius_agent.py test_nebius_smoke.py -v
 ```
 
 ### Live Nebius / Nemotron run
@@ -56,13 +56,14 @@ export NEBIUS_API_KEY="..."
 python nebius_smoke.py
 ```
 
-`nebius_smoke.py` performs one live completion and prints a sanitized evidence record containing the provider, model, Token Factory host, UTC completion time, hashes of the deterministic context and model completion, and the completion text. It never prints the API key. A successful result proves one observed Token Factory/Nemotron call only; it is not evidence of earnings, payout, deployment scale, or contest acceptance.
+`nebius_smoke.py` performs one live completion, prints a sanitized evidence record, and atomically saves that same record to `.nebius-evidence/live-evidence.json`. The `.nebius-evidence/` directory is gitignored so the local judge-evidence artifact cannot be accidentally published with the repository. The record contains the provider, model, Token Factory host, UTC completion time, hashes of the deterministic context and model completion, the completion text, and an explicit truth boundary. It never prints or writes the API key. A successful result proves one observed Token Factory/Nemotron call only; it is not evidence of earnings, payout, deployment scale, or contest acceptance.
 
 Optional overrides:
 
 ```bash
 export NEBIUS_MODEL="nvidia/nemotron-3-super-120b-a12b"
 export NEBIUS_BASE_URL="https://api.tokenfactory.us-central1.nebius.com/v1/"
+export NEBIUS_EVIDENCE_OUT="/safe/local/path/nebius-live-evidence.json"
 ```
 
 ## Architecture
@@ -107,8 +108,9 @@ The system also refuses to treat gambling, paid-entry speculation, securities/cr
 
 - `core.py` - deterministic qualification and ranking engine
 - `nebius_agent.py` - Nebius Token Factory / NVIDIA Nemotron adapter
-- `nebius_smoke.py` - one-command sanitized live-call evidence capture
+- `nebius_smoke.py` - one-command sanitized live-call evidence capture with local artifact persistence
 - `test_nebius_agent.py` - network-free Nebius adapter tests
+- `test_nebius_smoke.py` - network-free secret-boundary and evidence-persistence tests
 - `agent.py` - original Strands tools and policy layer
 - `demo.py` - provider-free deterministic demo and sample opportunities
 - `test_core.py` - deterministic guardrail tests
