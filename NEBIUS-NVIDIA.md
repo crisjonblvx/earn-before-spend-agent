@@ -17,8 +17,9 @@ The project existed before the Nebius submission period. The significant hackath
 Files added/changed for this adaptation:
 
 - `nebius_agent.py` — OpenAI-compatible Token Factory client using `nvidia/nemotron-3-super-120b-a12b`.
-- `nebius_smoke.py` — one-command live smoke run that prints judge-safe evidence without exposing the API key.
+- `nebius_smoke.py` — one-command live smoke run that prints judge-safe evidence without exposing the API key and automatically saves the same sanitized record locally.
 - `test_nebius_agent.py` — network-free tests proving deterministic blockers survive into the model context and the Nemotron route is selected.
+- `test_nebius_smoke.py` — network-free tests for the live-evidence boundary, including no-provider-call behavior without a key and secret-free artifact persistence.
 - `README.md` — setup/run instructions and explicit Nebius/NVIDIA architecture for judging.
 - `requirements.txt` — adds the OpenAI-compatible Python client used by Token Factory.
 
@@ -29,7 +30,7 @@ Install dependencies, then run the provider-free demo and offline tests:
 ```bash
 pip install -r requirements.txt
 python demo.py
-python -m unittest test_core.py test_nebius_agent.py -v
+python -m unittest test_core.py test_nebius_agent.py test_nebius_smoke.py -v
 ```
 
 A live Nebius run requires an existing, approved Token Factory API key. No resource is provisioned by this repository.
@@ -39,20 +40,21 @@ export NEBIUS_API_KEY="..."
 python nebius_smoke.py
 ```
 
-The smoke command performs one live Nemotron completion and prints a sanitized record containing the provider, model, endpoint host, UTC completion time, deterministic-context hash, completion hash, and completion text. It does not print the API key.
+The smoke command performs one live Nemotron completion, prints a sanitized record, and atomically writes the same record to `.nebius-evidence/live-evidence.json`. That directory is gitignored so a judge-evidence artifact cannot be accidentally published with the repository. The record contains the provider, model, endpoint host, UTC completion time, deterministic-context hash, completion hash, completion text, and an explicit truth boundary. It does not contain the API key.
 
 Optional environment overrides:
 
 ```bash
 export NEBIUS_MODEL="nvidia/nemotron-3-super-120b-a12b"
 export NEBIUS_BASE_URL="https://api.tokenfactory.us-central1.nebius.com/v1/"
+export NEBIUS_EVIDENCE_OUT="/safe/local/path/nebius-live-evidence.json"
 ```
 
 ## Submission evidence to capture after the human key gate
 
 1. Run the offline tests.
 2. Run `python nebius_smoke.py` with `NEBIUS_API_KEY` configured.
-3. Preserve the sanitized output as proof of one observed Token Factory/Nemotron call.
+3. Preserve `.nebius-evidence/live-evidence.json` as the sanitized proof of one observed Token Factory/Nemotron call.
 4. Record a <=3 minute public YouTube demo showing the project functioning and explaining that Token Factory hosts the NVIDIA Nemotron reasoning layer while deterministic Python retains final economic eligibility authority.
 5. Provide the public repository URL, MIT license, README setup steps, and this material-update explanation.
 6. Include honest product feedback on Nebius Token Factory/Nemotron based only on the observed live run.
