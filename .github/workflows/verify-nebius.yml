@@ -1,0 +1,49 @@
+name: Verify Nebius submission path
+
+on:
+  push:
+    branches:
+      - bonita/nebius-nemotron-integration-2026-09-18
+  pull_request:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Compile Python sources
+        run: python -m compileall -q core.py demo.py nebius_reasoner.py test_core.py test_nebius.py
+
+      - name: Run deterministic and Nebius integration tests
+        run: python -m unittest test_core.py test_nebius.py -v
+
+      - name: Run zero-provider-call demo
+        env:
+          RUN_NEBIUS: "0"
+          RUN_STRANDS: "0"
+        run: python demo.py > /tmp/earn-before-spend-demo.json
+
+      - name: Assert demo remains zero-provider-call
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+
+          payload = json.loads(Path('/tmp/earn-before-spend-demo.json').read_text())
+          assert payload['mode'] == 'deterministic_no_provider_call'
+          assert 'ranking' in payload and payload['ranking']
+          print('Verified deterministic demo without provider inference or secrets.')
+          PY
