@@ -8,14 +8,18 @@ narration layer, but the economic gate remains authoritative.
 from __future__ import annotations
 
 import json
+import sys
 from dataclasses import asdict
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from urllib.parse import urlparse
 
-from core import Opportunity, Pathway, rank
-
 ROOT = Path(__file__).resolve().parent
+REPO_ROOT = ROOT.parent
+if str(REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(REPO_ROOT))
+
+from core import Opportunity, Pathway, rank  # noqa: E402
 
 
 class Handler(BaseHTTPRequestHandler):
