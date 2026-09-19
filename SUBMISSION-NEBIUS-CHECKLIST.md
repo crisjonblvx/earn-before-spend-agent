@@ -14,15 +14,21 @@ Deadline: **October 30, 2026 at 10:00 AM PDT**.
 - [x] Missing credentials fail closed before network activity
 - [x] Mocked Token Factory integration tests pass
 - [x] Zero-provider-call demo remains runnable without credentials
-- [x] Repository CI workflow added to compile sources, run tests, and run the deterministic demo without provider inference
+- [x] Repository CI compiles sources, runs tests, and runs the deterministic demo without provider inference
+- [x] `nebius_live_evidence.py` reduces the first live-inference gate to one bounded command and writes only sanitized evidence to a gitignored local artifact
+- [x] Live-evidence tests verify missing-key fail-closed behavior, exactly one injected inference call, evidence hashing, atomic persistence, and secret exclusion without consuming provider credits
 
-## Remaining technical gates
+## Next technical gate
 
-- [ ] Perform one real bounded Token Factory call using an approved `NEBIUS_API_KEY` and NVIDIA Nemotron.
-- [ ] Record actual Token Factory/Nemotron observations for the required feedback section. Do not invent feedback.
-- [ ] Confirm judge-facing run instructions against the exact environment used for the successful live call.
-- [ ] Provide a working demo URL or other working judge-accessible demo artifact.
-- [ ] Record and publish a YouTube demo no longer than 3 minutes.
+With an already-approved, bounded Nebius Token Factory credential configured locally, run exactly:
+
+```bash
+NEBIUS_API_KEY='...' python nebius_live_evidence.py
+```
+
+A successful run will perform one Nemotron completion, print a sanitized record, and write `.nebius-evidence/live-evidence.json`. The file contains provider/model/endpoint host, UTC completion time, hashes of the deterministic context and model completion, the completion text, and an explicit truth boundary. It never writes the API key.
+
+After that evidence exists, use the observed Token Factory/Nemotron behavior to complete the feedback paragraph, confirm judge-facing run instructions, record the under-three-minute YouTube demo, and supply a working demo/test-build URL. Those later artifacts must describe only behavior actually observed.
 
 ## Final human gates
 
@@ -33,7 +39,7 @@ Deadline: **October 30, 2026 at 10:00 AM PDT**.
 
 ## Evidence boundary
 
-Do not claim the Nebius integration is live-tested until a real Token Factory response is captured successfully. Do not count prizes, credits, test activity, owner deposits, or pending awards as verified earnings.
+Do not claim the Nebius integration is live-tested until `.nebius-evidence/live-evidence.json` is created by a successful real Token Factory call. Do not count prizes, credits, test activity, owner deposits, or pending awards as verified earnings.
 
 ## Zero-capital scoreboard
 
