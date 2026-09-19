@@ -25,10 +25,10 @@ jobs:
           python-version: "3.11"
 
       - name: Compile Python sources
-        run: python -m compileall -q core.py demo.py nebius_reasoner.py test_core.py test_nebius.py
+        run: python -m compileall -q core.py demo.py nebius_reasoner.py nebius_live_evidence.py test_core.py test_nebius.py test_nebius_live_evidence.py
 
       - name: Run deterministic and Nebius integration tests
-        run: python -m unittest test_core.py test_nebius.py -v
+        run: python -m unittest test_core.py test_nebius.py test_nebius_live_evidence.py -v
 
       - name: Run zero-provider-call demo
         env:
