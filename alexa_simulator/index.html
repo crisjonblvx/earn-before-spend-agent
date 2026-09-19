@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Earn Before Spend — Alexa+ Simulation</title>
+  <style>
+    body{font-family:system-ui,sans-serif;max-width:900px;margin:0 auto;padding:32px;background:#0d1117;color:#f0f6fc}h1{font-size:2rem}textarea,pre{width:100%;box-sizing:border-box;background:#161b22;color:#e6edf3;border:1px solid #30363d;border-radius:10px;padding:14px}textarea{min-height:360px}button{padding:12px 18px;border:0;border-radius:999px;font-weight:700;cursor:pointer;margin:14px 0}.meta{color:#8b949e}.card{background:#161b22;border:1px solid #30363d;border-radius:14px;padding:18px;margin:18px 0}.score{font-weight:700}</style>
+</head>
+<body>
+  <p class="meta">Simulated Alexa+ experience • deterministic mode • $0 new cash</p>
+  <h1>“Alexa, what can I earn without spending new money?”</h1>
+  <div class="card">
+    <p>Paste up to three opportunity records. The agent will reject anything that violates the zero-capital rules and rank only qualified candidates.</p>
+    <textarea id="input">{
+  "opportunities": [
+    {
+      "title": "Owned digital template pack",
+      "pathway": "digital_product",
+      "payout_usd": 19,
+      "new_cash_required_usd": 0,
+      "cj_minutes_required": 5,
+      "deadline_hours": 720,
+      "payout_probability": 0.25,
+      "legitimacy_score": 95,
+      "fit_score": 98,
+      "rights_clear": true,
+      "eligibility_clear": true,
+      "payout_verifiable": true,
+      "terms_require_human_acceptance": true,
+      "source_url": "https://example.com/product"
+    },
+    {
+      "title": "Paid-entry contest",
+      "pathway": "competition",
+      "payout_usd": 5000,
+      "new_cash_required_usd": 25,
+      "cj_minutes_required": 10,
+      "deadline_hours": 24,
+      "payout_probability": 0.03,
+      "legitimacy_score": 90,
+      "fit_score": 80,
+      "rights_clear": true,
+      "eligibility_clear": true,
+      "payout_verifiable": true,
+      "terms_require_human_acceptance": true,
+      "source_url": "https://example.com/contest"
+    }
+  ]
+}</textarea>
+    <button onclick="run()">Ask Alexa+</button>
+  </div>
+  <div class="card">
+    <h2>Response</h2>
+    <p id="voice">Ready.</p>
+    <pre id="output">No run yet.</pre>
+  </div>
+  <script>
+    async function run(){
+      const voice=document.getElementById('voice');
+      const output=document.getElementById('output');
+      try{
+        const payload=JSON.parse(document.getElementById('input').value);
+        const r=await fetch('/api/rank',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
+        const data=await r.json();
+        voice.textContent=data.voice || data.error || 'No response';
+        output.textContent=JSON.stringify(data,null,2);
+      }catch(e){voice.textContent='I could not evaluate that input.';output.textContent=String(e)}
+    }
+  </script>
+</body>
+</html>
