@@ -27,6 +27,7 @@ Significant Nebius-period update on this branch:
 - added a hard separation between deterministic economic authority and model explanation;
 - added fail-closed key handling so no Token Factory request happens without an explicit `NEBIUS_API_KEY`;
 - added offline adapter tests that validate endpoint, model selection, prompt boundary, and malformed-response handling without spending tokens;
+- added `nebius_smoke.py`, a one-command live-proof path that performs one intentional Nemotron completion and writes a sanitized local evidence artifact without storing the API key;
 - updated the demo so judges can see deterministic qualification first and the Nemotron explanation second.
 
 ## Why Best Apps and Agents
@@ -47,11 +48,19 @@ Default model:
 
 `nvidia/nemotron-3-super-120b-a12b`
 
-Qualifying runtime command after an authorized API key is configured:
+Interactive runtime command after an authorized API key is configured:
 
 ```bash
 NEBIUS_API_KEY="..." RUN_NEBIUS=1 python demo.py
 ```
+
+Judge-evidence command after an authorized API key is configured:
+
+```bash
+NEBIUS_API_KEY="..." python nebius_smoke.py
+```
+
+The smoke script performs one live Token Factory + Nemotron call and writes `.nebius-evidence/live-evidence.json`, which is gitignored. The artifact contains provider/model, endpoint host, UTC completion time, a deterministic-context hash, a completion hash, the completion text, and an explicit truth boundary. It never records the API key and does not represent the call as earnings, payout, scale, or contest acceptance.
 
 The no-key default remains offline. This is intentional zero-capital safety, not the final judging proof. Final submission must include a real recorded Token Factory call using the NVIDIA model.
 
@@ -69,16 +78,16 @@ This architecture addresses a failure mode common to autonomous agents: models a
 
 1. **0:00–0:25 — Problem:** Show three opportunities with very different headline payouts. Explain that largest payout must not automatically win.
 2. **0:25–1:05 — Deterministic gate:** Run `python demo.py`. Show one candidate blocked/qualified based on objective constraints and the ranking output.
-3. **1:05–1:50 — Nebius runtime:** Run the same demo with `RUN_NEBIUS=1` using an authorized key. Show NVIDIA Nemotron 3 Super on Token Factory explaining the authoritative ranking and identifying the human gate.
+3. **1:05–1:50 — Nebius runtime:** Run `python nebius_smoke.py` using an authorized key. Show NVIDIA Nemotron 3 Super on Token Factory explaining the authoritative ranking, then show the sanitized evidence artifact proving the live call without exposing the key.
 4. **1:50–2:20 — Safety proof:** Briefly show `nebius_model.py`: explicit model, Token Factory endpoint, no request without key, and prompt language forbidding re-ranking or invented earnings.
-5. **2:20–2:45 — Tests:** Show the adapter tests passing without network usage.
+5. **2:20–2:45 — Tests:** Show adapter and smoke-evidence tests passing without network usage.
 6. **2:45–2:59 — Impact:** Starting capital $0; possible prizes are not counted as earned money; the product exists to reduce wasteful spend before validation.
 
 ## Judging-criteria mapping
 
 ### Technological implementation
 
-Token Factory is in the actual runtime path rather than being mentioned in copy only. NVIDIA Nemotron explains a deterministic ranking that the model cannot override. This makes the LLM useful while constraining financial authority.
+Token Factory is in the actual runtime path rather than being mentioned in copy only. NVIDIA Nemotron explains a deterministic ranking that the model cannot override. The smoke-evidence path makes the qualifying call independently auditable without leaking credentials.
 
 ### Design
 
@@ -106,9 +115,10 @@ The non-obvious choice is **not** asking the model to decide what is economicall
 - [x] Significant post-August-26 Nebius/NVIDIA code update staged on branch
 - [x] Nebius Token Factory runtime adapter implemented
 - [x] NVIDIA Nemotron model explicitly selected
-- [x] Offline adapter tests pass (3/3 on September 20, 2026)
+- [x] Offline adapter tests pass
+- [x] One-command sanitized live-evidence capture implemented and gitignored
 - [ ] Human-authorized `NEBIUS_API_KEY` configured under a capped/free-credit route
-- [ ] Real Token Factory + Nemotron runtime call captured
+- [ ] Real Token Factory + Nemotron runtime call captured in `.nebius-evidence/live-evidence.json`
 - [ ] Working demo/test URL prepared if required by the final form
 - [ ] <3 minute public demo video uploaded
 - [ ] Devpost project created/joined by human
