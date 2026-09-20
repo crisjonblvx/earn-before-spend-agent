@@ -21,7 +21,7 @@ The architecture is intentionally split:
 3. Nemotron explains the top qualified option, bounded next action, human approval gate, and useful runner-up.
 4. The model is explicitly prohibited from reversing deterministic qualification decisions or calling hypothetical value earned money.
 
-The default demo remains offline and makes **no provider call**. A Nebius request happens only when a human has intentionally configured `NEBIUS_API_KEY` and set `RUN_NEBIUS=1`.
+The default demo remains offline and makes **no provider call**. A Nebius request happens only when a human has intentionally configured `NEBIUS_API_KEY` and set `RUN_NEBIUS=1`, or explicitly runs the one-call evidence script.
 
 ```mermaid
 flowchart LR
@@ -44,9 +44,11 @@ flowchart LR
 - **Nebius service:** Token Factory inference API
 - **Model:** `nvidia/nemotron-3-super-120b-a12b`
 - **API style:** OpenAI-compatible `POST /v1/chat/completions`
-- **Runtime proof path:** `RUN_NEBIUS=1 python demo.py`
+- **Interactive runtime path:** `RUN_NEBIUS=1 python demo.py`
+- **Judge-evidence path:** `python nebius_smoke.py` after an authorized key is present
+- **Evidence artifact:** `.nebius-evidence/live-evidence.json` (gitignored)
 - **Fail-closed behavior:** missing `NEBIUS_API_KEY` raises before any network call
-- **Secret handling:** the API key is read from the environment and is never committed or logged
+- **Secret handling:** the API key is read from the environment and is never committed, printed, or written to the evidence artifact
 - **Economic authority:** deterministic ranking remains canonical; model output is explanation only
 
 ## Why it matters
@@ -87,19 +89,30 @@ python demo.py
 ## Run tests
 
 ```bash
-python -m unittest test_core.py test_nebius_model.py -v
+python -m unittest test_core.py test_nebius_model.py test_nebius_smoke.py -v
 ```
 
-`test_nebius_model.py` uses a fake HTTP response; tests do not consume Nebius tokens or require a real API key.
+The Nebius tests use fake/model-mocked responses; they do not consume Nebius tokens or require a real API key.
 
 ## Run with Nebius Token Factory
 
 Only do this with an authorized, capped/free-credit route. The repository does not create an account, accept provider terms, enable billing, or provision paid resources.
 
+Interactive demo:
+
 ```bash
 export NEBIUS_API_KEY="..."
 RUN_NEBIUS=1 python demo.py
 ```
+
+One-call sanitized proof artifact for later demo/submission packaging:
+
+```bash
+export NEBIUS_API_KEY="..."
+python nebius_smoke.py
+```
+
+The smoke script performs one intentional Nemotron completion and records only safe proof metadata plus the completion itself: provider/model, endpoint host, UTC completion time, deterministic-context hash, completion hash, and an explicit truth boundary. It does **not** record the API key and does not claim earnings, payout, deployment scale, or contest acceptance.
 
 Optional overrides:
 
@@ -116,7 +129,9 @@ The repository originally served as the standalone public implementation for AWS
 
 - `core.py` - deterministic qualification and ranking engine
 - `nebius_model.py` - Nebius Token Factory / NVIDIA Nemotron explanation adapter
+- `nebius_smoke.py` - one-call sanitized live-evidence capture
 - `test_nebius_model.py` - zero-network adapter tests
+- `test_nebius_smoke.py` - offline secret-safety/evidence-persistence tests
 - `agent.py` - earlier Strands tools and system policy
 - `demo.py` - offline demo plus opt-in Nebius/Strands model runs
 - `test_core.py` - focused economic guardrail tests
