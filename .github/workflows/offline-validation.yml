@@ -35,5 +35,8 @@ jobs:
       - name: Run all offline tests
         run: python -m unittest discover -v
 
+      - name: Audit submission readiness
+        run: python submission_readiness.py
+
       - name: Prove the default demo is provider-free
         run: python demo.py
