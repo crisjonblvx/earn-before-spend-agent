@@ -118,10 +118,26 @@ This prevents an ordinary preview deployment from silently consuming inference. 
 ## Run tests
 
 ```bash
-python -m unittest test_core.py test_nebius_model.py test_nebius_smoke.py test_judge_demo.py -v
+python -m unittest discover -v
 ```
 
-The Nebius and judge-demo tests use fake/model-mocked responses; they do not consume Nebius tokens or require a real API key.
+The Nebius, judge-demo, and submission-readiness tests use fake/model-mocked responses; they do not consume Nebius tokens or require a real API key.
+
+## Audit submission readiness
+
+The audit separates automation-completable requirements from human-controlled gates such as joining Devpost, supplying a capped/free Token Factory credential, deploying the judge build, and uploading the public YouTube demo.
+
+```bash
+python submission_readiness.py
+```
+
+The normal preflight exits successfully when every automatable requirement is ready, while still reporting unresolved human gates. Use final mode only when preparing to submit:
+
+```bash
+python submission_readiness.py --final
+```
+
+`--final` fails until the live Token Factory evidence file exists and `NEBIUS_DEMO_URL` and `NEBIUS_VIDEO_URL` are populated. It never accepts terms or performs a provider call itself.
 
 ## Run with Nebius Token Factory
 
@@ -160,10 +176,12 @@ The repository originally served as the standalone public implementation for AWS
 - `nebius_model.py` - Nebius Token Factory / NVIDIA Nemotron explanation adapter
 - `nebius_smoke.py` - one-call sanitized live-evidence capture
 - `judge_demo.py` - zero-dependency browser test build with a double-gated live Nebius endpoint
+- `submission_readiness.py` - machine-readable audit separating completed requirements from human gates
 - `Dockerfile` - portable package for the judge demo
 - `test_nebius_model.py` - zero-network adapter tests
 - `test_nebius_smoke.py` - offline secret-safety/evidence-persistence tests
 - `test_judge_demo.py` - offline tests for hosted-demo gating and deterministic authority
+- `test_submission_readiness.py` - tests for submission-preflight gate classification
 - `agent.py` - earlier Strands tools and system policy
 - `demo.py` - offline demo plus opt-in Nebius/Strands model runs
 - `test_core.py` - focused economic guardrail tests
