@@ -1,0 +1,39 @@
+name: Offline validation
+
+on:
+  push:
+    branches:
+      - bonita/nebius-nvidia-conversion-2026-09-20
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      NEBIUS_API_KEY: ""
+      RUN_NEBIUS: "0"
+      ALLOW_LIVE_NEBIUS: "0"
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Compile source
+        run: python -m compileall -q .
+
+      - name: Run all offline tests
+        run: python -m unittest discover -v
+
+      - name: Prove the default demo is provider-free
+        run: python demo.py
