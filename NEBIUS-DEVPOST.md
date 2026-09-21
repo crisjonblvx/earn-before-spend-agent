@@ -80,7 +80,7 @@ This architecture addresses a failure mode common to autonomous agents: models a
 2. **0:25–1:05 — Deterministic gate:** Run `python demo.py`. Show one candidate blocked/qualified based on objective constraints and the ranking output.
 3. **1:05–1:50 — Nebius runtime:** Run `python nebius_smoke.py` using an authorized key. Show NVIDIA Nemotron 3 Super on Token Factory explaining the authoritative ranking, then show the sanitized evidence artifact proving the live call without exposing the key.
 4. **1:50–2:20 — Safety proof:** Briefly show `nebius_model.py`: explicit model, Token Factory endpoint, no request without key, and prompt language forbidding re-ranking or invented earnings.
-5. **2:20–2:45 — Tests:** Show adapter and smoke-evidence tests passing without network usage.
+5. **2:20–2:45 — Tests:** Show adapter, evidence, judge-demo, and submission-readiness tests passing without network usage.
 6. **2:45–2:59 — Impact:** Starting capital $0; possible prizes are not counted as earned money; the product exists to reduce wasteful spend before validation.
 
 ## Judging-criteria mapping
@@ -103,9 +103,37 @@ The non-obvious choice is **not** asking the model to decide what is economicall
 
 ## Bonus lanes
 
-- **Most Valuable Feedback:** eligible only if the actual Devpost feedback section is completed truthfully. Do not claim until done.
+- **Most Valuable Feedback:** target this bonus only with truthful implementation/runtime feedback. The official rules list ten $100 awards plus NVIDIA swag for eligible submissions that complete the feedback section.
 - **Best Use of Tavily:** **not targeted in this iteration**. The rules require a functional runtime Tavily call. Do not add Tavily merely to chase a prize unless discovery/search becomes genuinely useful to the product and can be run at zero new cash.
 - **City Winner:** do not claim without actual attendance at an eligible Builders & Brews city event.
+
+## Tooling feedback draft
+
+This draft is intentionally split between observations that are already supported by implementation work and runtime observations that must wait for the first authorized Token Factory call.
+
+### What worked well during integration
+
+Nebius Token Factory's OpenAI-compatible chat-completions interface made the integration unusually lightweight. Earn Before Spend could add Nemotron without replacing its deterministic Python core or introducing a provider-specific framework. The regional base URL and explicit NVIDIA model ID also make the qualifying runtime path easy to audit in source code.
+
+The hackathon rules now clearly state that a runtime Token Factory inference call satisfies the "runs on Nebius" requirement for this track and that Serverless hosting is encouraged rather than mandatory. That clarity matters for existing applications that need to add a genuine Nebius/NVIDIA runtime path without migrating unrelated infrastructure just for eligibility.
+
+### Highest-impact documentation/product improvements
+
+1. Add a hackathon-oriented Token Factory quickstart that puts the regional base URL, current Nemotron model IDs, server-side environment-key pattern, one minimal chat-completions request, and a safe smoke-test pattern on one page.
+2. Show a first-class example for bounded or safety-sensitive agents where deterministic policy remains authoritative and the model is used for explanation/planning. That would help builders avoid accidentally giving a generative layer authority over irreversible actions.
+3. Make per-request usage/cost telemetry and project-level budget/cap guidance easy to find from the Token Factory quickstart. For zero-capital or cost-sensitive agents, being able to prove that a test cannot silently become uncapped usage is part of product safety, not just billing administration.
+4. Include structured-output examples for Nemotron in the same quickstart so builders can validate machine-consumable action plans without reverse-engineering response conventions.
+
+### Runtime observations still required before submission
+
+Do **not** fabricate these. After the first human-authorized capped/free Token Factory call, add concise measured observations for:
+
+- time to first/complete response for the exact Nemotron 3 Super call;
+- whether the model obeyed the no-re-ranking / no-invented-earnings constraints;
+- whether any error message, usage metadata, or response field was unclear;
+- one concrete change that would most improve the next integration pass.
+
+This preserves eligibility for the feedback bonus without turning preflight assumptions into fake product feedback.
 
 ## Evidence checklist
 
@@ -117,12 +145,14 @@ The non-obvious choice is **not** asking the model to decide what is economicall
 - [x] NVIDIA Nemotron model explicitly selected
 - [x] Offline adapter tests pass
 - [x] One-command sanitized live-evidence capture implemented and gitignored
+- [x] Devpost-required tooling feedback draft staged with unverified runtime claims clearly gated
+- [x] Machine-readable submission readiness audit added (`python submission_readiness.py`)
 - [ ] Human-authorized `NEBIUS_API_KEY` configured under a capped/free-credit route
 - [ ] Real Token Factory + Nemotron runtime call captured in `.nebius-evidence/live-evidence.json`
-- [ ] Working demo/test URL prepared if required by the final form
+- [ ] Working demo/test URL prepared
 - [ ] <3 minute public demo video uploaded
 - [ ] Devpost project created/joined by human
-- [ ] Feedback section completed truthfully if pursuing the $100 feedback bonus
+- [ ] Feedback runtime-observation blanks completed truthfully
 - [ ] Final submission reviewed and submitted by human
 
 ## Zero-capital scoreboard
