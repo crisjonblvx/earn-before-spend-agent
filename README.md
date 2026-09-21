@@ -86,13 +86,42 @@ No model provider is required.
 python demo.py
 ```
 
+## Run the judge web demo
+
+A zero-dependency browser surface is included so the final submission can expose a working test build without weakening the economic guardrails.
+
+```bash
+python judge_demo.py
+# open http://localhost:8000
+```
+
+The ranking endpoint is always deterministic and free:
+
+```text
+GET /api/ranking
+```
+
+The explanation endpoint is deliberately **double-gated**. It makes no provider call unless the deployment has both an authorized server-side key and an explicit live-call switch:
+
+```bash
+export NEBIUS_API_KEY="..."
+export ALLOW_LIVE_NEBIUS=1
+python judge_demo.py
+```
+
+```text
+POST /api/explain
+```
+
+This prevents an ordinary preview deployment from silently consuming inference. The page also exposes `/healthz`, and `Dockerfile` packages the demo with no third-party Python dependencies. Do not put the Nebius key in client-side code or a public repository.
+
 ## Run tests
 
 ```bash
-python -m unittest test_core.py test_nebius_model.py test_nebius_smoke.py -v
+python -m unittest test_core.py test_nebius_model.py test_nebius_smoke.py test_judge_demo.py -v
 ```
 
-The Nebius tests use fake/model-mocked responses; they do not consume Nebius tokens or require a real API key.
+The Nebius and judge-demo tests use fake/model-mocked responses; they do not consume Nebius tokens or require a real API key.
 
 ## Run with Nebius Token Factory
 
@@ -130,8 +159,11 @@ The repository originally served as the standalone public implementation for AWS
 - `core.py` - deterministic qualification and ranking engine
 - `nebius_model.py` - Nebius Token Factory / NVIDIA Nemotron explanation adapter
 - `nebius_smoke.py` - one-call sanitized live-evidence capture
+- `judge_demo.py` - zero-dependency browser test build with a double-gated live Nebius endpoint
+- `Dockerfile` - portable package for the judge demo
 - `test_nebius_model.py` - zero-network adapter tests
 - `test_nebius_smoke.py` - offline secret-safety/evidence-persistence tests
+- `test_judge_demo.py` - offline tests for hosted-demo gating and deterministic authority
 - `agent.py` - earlier Strands tools and system policy
 - `demo.py` - offline demo plus opt-in Nebius/Strands model runs
 - `test_core.py` - focused economic guardrail tests
