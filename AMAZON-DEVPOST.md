@@ -151,7 +151,7 @@ Yes for prototyping and validation. The simulated route is a credible way to tes
 - [x] Product feedback draft
 - [x] Friction log draft for optional judging bonus
 - [x] Demo script under 3 minutes
-- [ ] Public contribution / PR URL inserted after PR creation
+- [x] Public contribution / PR URL: https://github.com/crisjonblvx/earn-before-spend-agent/pull/6
 - [ ] Public demo URL
 - [ ] Public YouTube/Vimeo demo under 3 minutes
 - [ ] Devpost project joined by human
@@ -160,7 +160,7 @@ Yes for prototyping and validation. The simulated route is a credible way to tes
 
 ## Open Source mini challenge fields
 
-**Contribution URL:** `[INSERT PUBLIC PR URL]`  
+**Contribution URL:** https://github.com/crisjonblvx/earn-before-spend-agent/pull/6  
 **Repository URL:** https://github.com/crisjonblvx/earn-before-spend-agent  
 **GitHub username:** crisjonblvx
 
