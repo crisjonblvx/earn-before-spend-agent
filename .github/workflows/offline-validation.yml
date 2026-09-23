@@ -40,3 +40,58 @@ jobs:
 
       - name: Prove the default demo is provider-free
         run: python demo.py
+
+      - name: Build judge demo container
+        run: docker build -t earn-before-spend-judge:test .
+
+      - name: Smoke-test deployable judge container without provider access
+        shell: bash
+        run: |
+          set -euo pipefail
+          cleanup() {
+            docker rm -f earn-before-spend-judge-smoke >/dev/null 2>&1 || true
+          }
+          trap cleanup EXIT
+
+          docker run -d --name earn-before-spend-judge-smoke \
+            -p 127.0.0.1:8000:8000 \
+            -e NEBIUS_API_KEY="" \
+            -e ALLOW_LIVE_NEBIUS="0" \
+            earn-before-spend-judge:test
+
+          python - <<'PY'
+          import json
+          import time
+          import urllib.error
+          import urllib.request
+
+          base = "http://127.0.0.1:8000"
+          last_error = None
+          for _ in range(30):
+              try:
+                  with urllib.request.urlopen(base + "/healthz", timeout=2) as response:
+                      health = json.load(response)
+                  break
+              except Exception as exc:
+                  last_error = exc
+                  time.sleep(1)
+          else:
+              raise SystemExit(f"judge container did not become healthy: {last_error}")
+
+          assert health == {"ok": True, "live_nebius_enabled": False}, health
+
+          with urllib.request.urlopen(base + "/api/ranking", timeout=2) as response:
+              ranking = json.load(response)
+          assert ranking["mode"] == "deterministic_authority", ranking
+          assert ranking["ranking"], ranking
+
+          request = urllib.request.Request(base + "/api/explain", method="POST")
+          try:
+              urllib.request.urlopen(request, timeout=2)
+          except urllib.error.HTTPError as exc:
+              assert exc.code == 503, exc.code
+              body = json.loads(exc.read().decode("utf-8"))
+              assert body["provider_call_made"] is False, body
+          else:
+              raise AssertionError("live explanation unexpectedly succeeded without an authorized key")
+          PY
