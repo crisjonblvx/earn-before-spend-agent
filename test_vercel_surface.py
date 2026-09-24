@@ -23,7 +23,7 @@ class VercelSurfaceTests(unittest.TestCase):
     def test_vercel_config_keeps_api_runtime_bounded_to_project_code(self) -> None:
         config = Path("vercel.json").read_text(encoding="utf-8")
         self.assertIn('"api/**/*.py"', config)
-        self.assertIn('"test_*.py"', config)
+        self.assertIn("test_*.py", config)
 
 
 if __name__ == "__main__":
