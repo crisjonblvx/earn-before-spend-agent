@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Earn Before Spend — Judge Demo</title>
+<style>
+body{font-family:system-ui,-apple-system,sans-serif;background:#0b0d12;color:#f7f7fb;margin:0;padding:32px;max-width:980px;margin:auto}h1{font-size:clamp(2rem,6vw,4.8rem);line-height:.95;margin:.2em 0}.k{color:#9ee86f}.card{background:#151923;border:1px solid #303747;border-radius:18px;padding:18px;margin:14px 0}.row{display:grid;grid-template-columns:1fr auto;gap:16px}.ok{color:#9ee86f}.blocked{color:#ff8f8f}button{background:#9ee86f;color:#10140d;border:0;border-radius:12px;padding:12px 18px;font-weight:800;cursor:pointer}button:disabled{opacity:.5}pre{white-space:pre-wrap;background:#090b10;border-radius:12px;padding:14px;overflow:auto}.small{color:#aeb7c8;font-size:.92rem}.pill{display:inline-block;border:1px solid #3b465b;border-radius:999px;padding:5px 10px;margin:3px}</style>
+</head>
+<body>
+<div class="small">Nebius x NVIDIA Global AI Hackathon test build</div>
+<h1>Earn <span class="k">Before</span> Spend</h1>
+<p>A bounded economic agent: deterministic code decides what is eligible; NVIDIA Nemotron on Nebius Token Factory explains the next move without overriding the money rules.</p>
+<div><span class="pill">$0 new seed capital</span><span class="pill">deterministic gate</span><span class="pill">Nemotron 3 Super</span><span class="pill">Token Factory</span></div>
+<h2>Authoritative ranking</h2>
+<div id="ranking" class="card">Loading…</div>
+<h2>Nemotron explanation</h2>
+<p class="small">Live inference is intentionally fail-closed unless the deployment owner explicitly supplies an authorized server-side Nebius key and sets <code>ALLOW_LIVE_NEBIUS=1</code>.</p>
+<button id="explain">Run bounded explanation</button>
+<pre id="model">No model call made yet.</pre>
+<script>
+const esc=s=>String(s).replace(/[&<>\"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;'}[c]));
+async function load(){const r=await fetch('/api/ranking');const d=await r.json();document.querySelector('#ranking').innerHTML=d.ranking.map((x,i)=>`<div class="row"><div><b>${i+1}. ${esc(x.title)}</b><div class="small">${esc(x.reason)}</div></div><div class="${x.eligible?'ok':'blocked'}">${x.eligible?'QUALIFIED':'BLOCKED'} · ${x.score}</div></div>`).join('<hr style="border-color:#2a3140">');}
+document.querySelector('#explain').onclick=async e=>{e.target.disabled=true;document.querySelector('#model').textContent='Requesting…';try{const r=await fetch('/api/explain',{method:'POST'});const d=await r.json();document.querySelector('#model').textContent=d.explanation||d.error||JSON.stringify(d,null,2);}catch(err){document.querySelector('#model').textContent='Request failed safely.';}finally{e.target.disabled=false;}};
+load().catch(()=>{document.querySelector('#ranking').textContent='Ranking endpoint unavailable.';});
+</script>
+</body>
+</html>
