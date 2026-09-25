@@ -21,6 +21,38 @@ LOCAL_REQUIREMENTS = {
     "submission_draft": "NEBIUS-DEVPOST.md",
 }
 
+NEBIUS_EVIDENCE_CANDIDATES = (
+    ".nebius-evidence/live-evidence.json",
+    ".nebius-evidence/runtime-feedback.json",
+    ".conversion-evidence/nebius-tavily.json",
+)
+
+
+def _valid_nebius_evidence(root: Path) -> str | None:
+    """Return the first trusted local evidence path that proves a live Nebius call."""
+    for relative in NEBIUS_EVIDENCE_CANDIDATES:
+        path = root / relative
+        if not path.is_file():
+            continue
+
+        try:
+            payload = json.loads(path.read_text(encoding="utf-8"))
+        except (OSError, json.JSONDecodeError):
+            continue
+
+        record = payload.get("nebius") if relative.startswith(".conversion-evidence/") else payload
+        if not isinstance(record, dict):
+            continue
+
+        if (
+            record.get("live_call_observed") is True
+            and record.get("provider") == "Nebius Token Factory"
+            and str(record.get("model", "")).startswith("nvidia/")
+        ):
+            return relative
+
+    return None
+
 
 def audit(root: Path = Path("."), env: Mapping[str, str] | None = None) -> dict:
     env = env or os.environ
@@ -53,12 +85,16 @@ def audit(root: Path = Path("."), env: Mapping[str, str] | None = None) -> dict:
         }
     )
 
-    evidence = root / ".nebius-evidence" / "live-evidence.json"
+    evidence_path = _valid_nebius_evidence(root)
     items.append(
         {
             "name": "live_token_factory_evidence",
-            "status": "ready" if evidence.is_file() else "human_gate",
-            "detail": "Requires one human-authorized capped/free Token Factory call.",
+            "status": "ready" if evidence_path else "human_gate",
+            "detail": (
+                evidence_path
+                if evidence_path
+                else "Requires one human-authorized capped/free Token Factory call with validated local evidence."
+            ),
         }
     )
 
