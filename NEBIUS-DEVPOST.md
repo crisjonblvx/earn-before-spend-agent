@@ -149,11 +149,21 @@ The non-obvious choice is **not** asking the model or search provider to decide 
 
 This draft is intentionally split between observations that are already supported by implementation work and runtime observations that must wait for the first authorized Token Factory call.
 
+The organizer's latest submission guidance asks every entrant to cover five feedback points for the Nebius/NVIDIA tools used: what they were used for, what worked well, what needs work, how zero-to-hello-world onboarding felt, and whether the builder would use them again. The sections below map directly to those questions so the final Devpost field is complete rather than generic.
+
 ### What worked well during integration
 
 Nebius Token Factory's OpenAI-compatible chat-completions interface made the integration unusually lightweight. Earn Before Spend could add Nemotron without replacing its deterministic Python core or introducing a provider-specific framework. The regional base URL and explicit NVIDIA model ID also make the qualifying runtime path easy to audit in source code.
 
 The hackathon rules now clearly state that a runtime Token Factory inference call satisfies the "runs on Nebius" requirement for this track and that Serverless hosting is encouraged rather than mandatory. That clarity matters for existing applications that need to add a genuine Nebius/NVIDIA runtime path without migrating unrelated infrastructure just for eligibility.
+
+### Zero-to-hello-world onboarding
+
+The integration path was straightforward once the regional Token Factory endpoint and NVIDIA model ID were known: the existing Python application could use the OpenAI-compatible chat-completions shape without replacing its deterministic core. The biggest onboarding friction was not writing the adapter; it was making the cost/safety boundary explicit enough for a zero-capital agent. A hackathon-specific quickstart that combines endpoint, current model IDs, environment-key handling, usage visibility, and budget/cap guidance would reduce that uncertainty.
+
+### Would I build with it again?
+
+Yes, for this type of bounded agent. Token Factory let the project add an NVIDIA open model as a real runtime reasoning layer while keeping deterministic economic policy in ordinary code. I would use it again when I want open-model inference without rewriting the surrounding application around a provider-specific framework. The deciding factor for broader production use would be clearer first-party guidance around per-request usage/cost visibility and hard spending controls.
 
 ### Highest-impact documentation/product improvements
 
@@ -185,7 +195,7 @@ This preserves eligibility for the feedback bonus without turning preflight assu
 - [x] One-command sanitized Nebius live-evidence capture implemented and gitignored
 - [x] Tavily discovery adapter implemented with fail-closed human gate
 - [x] One-command sanitized Tavily evidence probe implemented and gitignored
-- [x] Devpost-required tooling feedback draft staged with unverified runtime claims clearly gated
+- [x] Devpost-required tooling feedback draft staged and mapped to the organizer's five requested feedback questions, with unverified runtime claims clearly gated
 - [x] Machine-readable submission readiness audit added (`python submission_readiness.py`)
 - [ ] Human-authorized `NEBIUS_API_KEY` configured under a capped/free-credit route
 - [ ] Real Token Factory + Nemotron runtime call captured in `.nebius-evidence/live-evidence.json`
