@@ -57,13 +57,25 @@ class SubmissionReadinessTests(unittest.TestCase):
         report = audit(
             self.make_root(evidence="smoke"),
             env={
-                "NEBIUS_DEMO_URL": "https://github.com/crisjonblvx/earn-before-spend-agent",
+                "NEBIUS_DEMO_URL": "https://earn-before-spend-demo.vercel.app",
                 "NEBIUS_VIDEO_URL": "https://youtube.com/watch?v=example",
             },
         )
         self.assertEqual(report["counts"]["missing"], 0)
         self.assertEqual(report["counts"]["human_gate"], 1)
         self.assertFalse(report["submission_ready"])
+
+    def test_repository_url_does_not_count_as_working_demo(self) -> None:
+        report = audit(
+            self.make_root(evidence="smoke"),
+            env={
+                "NEBIUS_DEMO_URL": "https://github.com/crisjonblvx/earn-before-spend-agent",
+                "NEBIUS_VIDEO_URL": "https://youtube.com/watch?v=example",
+            },
+        )
+        demo = next(item for item in report["items"] if item["name"] == "working_demo_url")
+        self.assertEqual(demo["status"], "human_gate")
+        self.assertEqual(report["counts"]["human_gate"], 2)
 
     def test_preferred_feedback_probe_evidence_counts_as_live_proof(self) -> None:
         report = audit(self.make_root(evidence="feedback"), env={})
