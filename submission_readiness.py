@@ -32,6 +32,11 @@ NEBIUS_EVIDENCE_CANDIDATES = (
 
 _PLACEHOLDER_HOSTS = {"example.com", "example.org", "example.net", "example.test"}
 _PLACEHOLDER_SUFFIXES = (".example", ".invalid", ".localhost", ".test")
+_NON_DEMO_HOSTS = {
+    "github.com",
+    "www.github.com",
+    "raw.githubusercontent.com",
+}
 
 
 def _public_host(hostname: str) -> bool:
@@ -52,12 +57,15 @@ def _valid_public_demo_url(value: str) -> bool:
         parsed = urlparse(value)
     except ValueError:
         return False
+
+    host = (parsed.hostname or "").rstrip(".").lower()
     return (
         parsed.scheme in {"http", "https"}
         and parsed.username is None
         and parsed.password is None
-        and bool(parsed.hostname)
-        and _public_host(parsed.hostname or "")
+        and bool(host)
+        and host not in _NON_DEMO_HOSTS
+        and _public_host(host)
     )
 
 
