@@ -57,7 +57,7 @@ class SubmissionReadinessTests(unittest.TestCase):
         report = audit(
             self.make_root(evidence="smoke"),
             env={
-                "NEBIUS_DEMO_URL": "https://example.test/demo",
+                "NEBIUS_DEMO_URL": "https://github.com/crisjonblvx/earn-before-spend-agent",
                 "NEBIUS_VIDEO_URL": "https://youtube.com/watch?v=example",
             },
         )
